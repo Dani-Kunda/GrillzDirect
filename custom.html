@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Build Your Grillz — Grillz Direct</title>
+  <meta name="description" content="Pick your teeth, metal and style and see your grillz price instantly.">
+  <script>try{var t=JSON.parse(localStorage.getItem("gd-theme"));if(t&&t!=="auto")document.documentElement.dataset.theme=t}catch(e){}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@300;400;500;600&family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/main.js" defer></script>
+</head>
+<body>
+  <header id="site-header"></header>
+
+  <main>
+    <section class="page-head container reveal">
+      <span class="eyebrow">Build yours</span>
+      <h1>Make your grillz</h1>
+      <p>Tap the teeth you want covered, choose your metal and style — your price updates as you go.</p>
+    </section>
+
+    <section class="container builder" id="builder">
+      <div class="card reveal">
+        <div class="mouth">
+          <div class="arch-label">Top</div>
+          <div class="arch top" id="arch-top"></div>
+          <div style="height:18px"></div>
+          <div class="arch bottom" id="arch-bottom"></div>
+          <div class="arch-label">Bottom</div>
+        </div>
+        <div class="quick">
+          <button class="chip" type="button" data-preset="1">1 top</button>
+          <button class="chip" type="button" data-preset="2">2 top</button>
+          <button class="chip" type="button" data-preset="4">4 top</button>
+          <button class="chip" type="button" data-preset="6">6 top</button>
+          <button class="chip" type="button" data-preset="6" data-both="1">6 top + 6 bottom</button>
+          <button class="chip" type="button" data-preset="full">Full top</button>
+          <button class="chip" type="button" data-preset="clear">Clear</button>
+        </div>
+
+        <div class="field" style="margin-top:28px">
+          <span class="legend">Metal</span>
+          <div class="options">
+            <button class="chip on" type="button" data-metal="silver">Silver</button>
+            <button class="chip" type="button" data-metal="gold">Gold</button>
+            <button class="chip" type="button" data-metal="rose">Rose gold</button>
+          </div>
+        </div>
+        <div class="field">
+          <span class="legend">Style</span>
+          <div class="options">
+            <button class="chip on" type="button" data-style="Plain polish">Plain polish</button>
+            <button class="chip" type="button" data-style="Open face">Open face</button>
+            <button class="chip" type="button" data-style="Diamond cut">Diamond cut</button>
+            <button class="chip" type="button" data-style="Custom design">Custom design</button>
+          </div>
+        </div>
+        <p class="muted">Metal and style are confirmed with you before work starts.</p>
+      </div>
+
+      <aside class="card reveal" style="position:sticky;top:90px">
+        <h3>Your set</h3>
+        <div class="summary-line"><span>Top</span><span id="sum-top">—</span></div>
+        <div class="summary-line"><span>Bottom</span><span id="sum-bottom">—</span></div>
+        <div class="summary-line"><span>Metal</span><span id="sum-metal">Silver</span></div>
+        <div class="summary-line"><span>Style</span><span id="sum-style">Plain polish</span></div>
+        <div class="summary-total"><span>Total</span><strong id="sum-total">€0</strong></div>
+        <div class="summary-line" style="border:none"><span>50% deposit today</span><span id="sum-deposit">€0</span></div>
+        <button class="btn btn-block" id="builder-add" type="button" style="margin-top:16px">Add to order</button>
+        <a class="btn btn-block btn-teal" id="builder-quote" href="contact.html" style="margin-top:16px" hidden>Request custom quote</a>
+        <a class="btn btn-ghost btn-block" href="payment.html" style="margin-top:12px">Go to checkout</a>
+      </aside>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+</body>
+</html>
