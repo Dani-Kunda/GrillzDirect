@@ -1,0 +1,16 @@
+# One-click hosting on Render (render.com): New > Blueprint > pick this repo.
+services:
+  - type: web
+    name: grillz-direct
+    runtime: python
+    buildCommand: "echo no build needed"
+    startCommand: python server.py
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: SITE_URL
+        sync: false
