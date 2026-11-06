@@ -23,7 +23,9 @@
     </section>
 
     <section class="container grid grid-2" style="align-items:start">
-      <form class="card reveal" id="contact-form" novalidate>
+      <form class="card reveal" id="contact-form" name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" novalidate>
+        <input type="hidden" name="form-name" value="contact">
+        <p hidden><label>Leave this empty <input name="bot-field"></label></p>
         <div class="row">
           <div class="field"><label for="name">Name</label><input id="name" name="name" autocomplete="name" required></div>
           <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" required></div>

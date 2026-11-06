@@ -402,9 +402,16 @@ function initContact() {
       msg.className = "form-msg err"; msg.textContent = "Please fill in your name, email and message."; return;
     }
     try {
-      const res = await fetch("/api/contact", {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data),
+      // Netlify Forms (live site) first, then the local Python server
+      let res = await fetch("/", {
+        method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(new FormData(form)).toString(),
       });
+      if (!res.ok) {
+        res = await fetch("/api/contact", {
+          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data),
+        });
+      }
       if (!res.ok) throw new Error();
       msg.className = "form-msg ok";
       msg.textContent = "Message sent! We'll get back to you within 24–48 hours.";
