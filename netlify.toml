@@ -1,0 +1,12 @@
+# Netlify settings: the site is served from this folder as-is, and the
+# payment code in netlify/functions runs on Netlify's servers.
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+# server.py is only for running the site on your own computer
+[[redirects]]
+  from = "/server.py"
+  to = "/404.html"
+  status = 404
+  force = true
