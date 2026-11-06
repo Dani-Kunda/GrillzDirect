@@ -13,7 +13,9 @@ export const DEPOSIT_RATE = 0.5;
 const MAX_TEETH_PER_ARCH = 10;
 const METALS = { silver: "Silver", gold: "Gold", rose: "Rose gold" };
 const STYLES = new Set(["Plain polish", "Open face", "Diamond cut"]);
-// Apple Pay and Google Pay are wallets on top of "card" in Stripe Checkout
+// Methods the payment page offers. Stripe Checkout shows whichever of these are
+// switched on in Dashboard > Settings > Payment methods (Stripe no longer lets
+// the site pick one), so this list is only used to validate the request.
 export const STRIPE_METHODS = { apple: "card", google: "card", card: "card", paypal: "paypal" };
 
 export function archPrice(teeth, currency) {

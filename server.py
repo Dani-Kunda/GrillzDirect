@@ -264,7 +264,6 @@ class Handler(SimpleHTTPRequestHandler):
         try:
             session = stripe_request("POST", "checkout/sessions", {
                 "mode": "payment",
-                "payment_method_types": [STRIPE_METHODS[method]],
                 "line_items": [{
                     "quantity": 1,
                     "price_data": {
