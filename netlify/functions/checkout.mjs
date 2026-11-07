@@ -1,7 +1,7 @@
 // POST /api/checkout — works out the 50% deposit and opens a Stripe Checkout page
 // (card, Apple Pay, Google Pay or PayPal). Orders are recorded in Stripe itself:
 // Dashboard > Payments shows each one with its reference and order details.
-import { DEPOSIT_RATE, FULL_PRICE, STRIPE_METHODS, priceOrder, stripe, json } from "../lib/shop.mjs";
+import { CURRENCIES, DEPOSIT_RATE, STRIPE_METHODS, priceOrder, stripe, json } from "../lib/shop.mjs";
 
 export default async (req) => {
   if (req.method !== "POST") return json(405, { error: "Method not allowed" });
@@ -9,7 +9,7 @@ export default async (req) => {
   if (!data || typeof data !== "object") return json(400, { error: "Invalid request" });
 
   const { currency, method } = data;
-  if (!(currency in FULL_PRICE) || !(method in STRIPE_METHODS)) {
+  if (!CURRENCIES.includes(currency) || !(method in STRIPE_METHODS)) {
     return json(400, { error: "Choose a currency and payment method." });
   }
 

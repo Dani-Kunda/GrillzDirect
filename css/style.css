@@ -177,6 +177,7 @@ p { margin: 0 0 1em; color: var(--text-soft); }
 .cart-count[data-count="0"] { display: none; }
 .theme-label { font-size: .6rem; position: absolute; bottom: -16px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-soft); }
 .menu-toggle { display: none; }
+.currency-symbol { font-family: var(--font-title); font-size: 1.35rem; font-weight: 500; line-height: 1; }
 
 @media (max-width: 1100px) {
   .menu-toggle { display: inline-grid; }

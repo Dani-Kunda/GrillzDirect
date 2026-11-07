@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
   <title>Checkout — Grillz Direct</title>
   <meta name="description" content="Pay your Grillz Direct deposit with Apple Pay, Google Pay, card or PayPal.">
   <script>try{var t=JSON.parse(localStorage.getItem("gd-theme"));if(t&&t!=="auto")document.documentElement.dataset.theme=t}catch(e){}</script>
@@ -19,16 +22,12 @@
     <section class="page-head container reveal">
       <span class="eyebrow">Checkout</span>
       <h1>Payment</h1>
-      <p>Pay your 50% deposit in euro or pounds to lock in your order. The balance is due before collection or shipping.</p>
+      <p>Pay your 50% deposit to lock in your order — use the €/£ button at the top to pay in euro or pounds. The balance is due before collection or shipping.</p>
     </section>
 
     <section class="container grid grid-2" style="align-items:start">
       <div class="card reveal">
         <h3>Your order</h3>
-        <div class="currency-switch" role="group" aria-label="Currency">
-          <button type="button" data-currency="EUR" aria-pressed="true">€ EUR · Ireland</button>
-          <button type="button" data-currency="GBP" aria-pressed="false">£ GBP · UK</button>
-        </div>
         <div id="cart-list"></div>
         <div class="summary-line" style="margin-top:12px"><span>Total</span><strong id="pay-total">€0</strong></div>
         <div class="summary-line"><span>Balance later</span><span id="pay-balance">€0</span></div>

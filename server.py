@@ -41,12 +41,17 @@ EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 SESSION_RE = re.compile(r"^cs_[A-Za-z0-9_]+$")
 _lock = threading.Lock()
 
-# Newbie price list per arch — keep in sync with PRICE_TIERS in js/main.js
-PRICE_TIERS = [(1, 40, 35), (2, 60, 50), (4, 90, 75), (6, 120, 100), (8, 150, 125)]
-FULL_PRICE = {"EUR": 200, "GBP": 170}
+# Price per arch for each metal: (teeth, EUR, GBP); "full" covers 9+ teeth.
+# Keep in sync with PRICES in js/main.js and netlify/lib/shop.mjs
+PRICES = {
+    "silver": {"tiers": [(1, 40, 35), (2, 60, 50), (4, 90, 75), (6, 120, 100), (8, 150, 125)], "full": (200, 170)},
+    "gold": {"tiers": [(1, 160, 140), (2, 300, 260), (4, 560, 490), (6, 800, 700), (8, 1040, 910)], "full": (1250, 1090)},
+    "rose": {"tiers": [(1, 170, 150), (2, 315, 275), (4, 590, 515), (6, 840, 735), (8, 1090, 950)], "full": (1310, 1145)},
+}
+CURRENCIES = ["EUR", "GBP"]
 DEPOSIT_RATE = 0.5
 MAX_TEETH_PER_ARCH = 10
-METALS = {"silver": "Silver", "gold": "Gold", "rose": "Rose gold"}
+METALS = {"silver": "Sterling silver", "gold": "9ct gold", "rose": "9ct rose gold"}
 STYLES = {"Plain polish", "Open face", "Diamond cut"}
 # Apple Pay and Google Pay are wallets on top of "card" in Stripe Checkout
 STRIPE_METHODS = {"apple": "card", "google": "card", "card": "card", "paypal": "paypal"}
@@ -100,14 +105,15 @@ def now():
 
 # ---------- pricing ----------
 
-def arch_price(teeth, currency):
+def arch_price(teeth, currency, metal="silver"):
     if teeth <= 0:
         return 0
-    column = 1 if currency == "EUR" else 2
-    for tier in PRICE_TIERS:
+    table = PRICES[metal]
+    column = CURRENCIES.index(currency) + 1
+    for tier in table["tiers"]:
         if teeth <= tier[0]:
             return tier[column]
-    return FULL_PRICE[currency]
+    return table["full"][column - 1]
 
 
 def price_order(items, currency):
@@ -124,8 +130,10 @@ def price_order(items, currency):
         style = item.get("style", "Plain polish")
         if style not in STYLES:
             raise ValueError("Custom designs need a quote before payment.")
-        metal = METALS.get(item.get("metal"), "Silver")
-        price = arch_price(top, currency) + arch_price(bottom, currency)
+        if item.get("metal") not in METALS:
+            raise ValueError("Choose silver, gold or rose gold.")
+        metal = METALS[item["metal"]]
+        price = arch_price(top, currency, item["metal"]) + arch_price(bottom, currency, item["metal"])
         arches = [f"Top {'full' if top >= 9 else top}" if top else "", f"Bottom {'full' if bottom >= 9 else bottom}" if bottom else ""]
         lines.append({"summary": f"{', '.join(a for a in arches if a)} · {metal} · {style}", "price": price})
         total += price
@@ -248,7 +256,7 @@ class Handler(SimpleHTTPRequestHandler):
     def checkout(self, data):
         currency = data.get("currency")
         method = data.get("method")
-        if currency not in FULL_PRICE or method not in STRIPE_METHODS:
+        if currency not in CURRENCIES or method not in STRIPE_METHODS:
             return self.send_json(400, {"error": "Choose a currency and payment method."})
         try:
             lines, total = price_order(data.get("items"), currency)

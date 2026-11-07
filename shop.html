@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
   <title>Pricing — Grillz Direct</title>
   <meta name="description" content="Grillz Direct newbie price list: 1 tooth €40 / £35 up to a full set for €200 / £170.">
   <script>try{var t=JSON.parse(localStorage.getItem("gd-theme"));if(t&&t!=="auto")document.documentElement.dataset.theme=t}catch(e){}</script>
@@ -17,42 +20,51 @@
 
   <main>
     <section class="page-head container reveal">
-      <span class="eyebrow">Newbie price</span>
+      <span class="eyebrow">Silver · Gold · Rose gold</span>
       <h1>Pricing</h1>
-      <p>Prices are per arch (top or bottom), shown in euro for Ireland and pounds for the UK. Add a set to your order, or build exactly what you want tooth by tooth.</p>
+      <p>Prices are per arch (top or bottom). Pick a metal to see its prices, and use the €/£ button at the top to switch between euro and pounds.</p>
     </section>
 
-    <section class="container grid grid-3">
-      <article class="card price-card reveal">
+    <section class="container center reveal" style="margin-bottom:28px">
+      <div class="options" style="justify-content:center" role="group" aria-label="Metal">
+        <button class="chip on" type="button" data-metal-pick="silver">Silver</button>
+        <button class="chip" type="button" data-metal-pick="gold">Gold</button>
+        <button class="chip" type="button" data-metal-pick="rose">Rose gold</button>
+      </div>
+      <p class="muted" style="margin-top:12px" id="metal-note">Sterling silver 925</p>
+    </section>
+
+    <section class="container grid grid-3" id="price-grid">
+      <article class="card price-card reveal" data-teeth="1">
         <div class="teeth">1</div><div class="label">Tooth</div>
-        <div class="price">€40</div><div class="price-alt">£35</div><div class="per">Single cap · great first grill</div>
-        <button class="btn btn-block" data-add="1 tooth grill" data-top="1">Add to order</button>
+        <div class="price"></div><div class="per"></div>
+        <button class="btn btn-block" data-add="1 tooth grill">Add to order</button>
       </article>
-      <article class="card price-card reveal">
+      <article class="card price-card reveal" data-teeth="2">
         <div class="teeth">2</div><div class="label">Teeth</div>
-        <div class="price">€60</div><div class="price-alt">£50</div><div class="per">€30 / £25 per tooth</div>
-        <button class="btn btn-block" data-add="2 teeth grill" data-top="2">Add to order</button>
+        <div class="price"></div><div class="per"></div>
+        <button class="btn btn-block" data-add="2 teeth grill">Add to order</button>
       </article>
-      <article class="card price-card reveal">
+      <article class="card price-card reveal" data-teeth="4">
         <div class="teeth">4</div><div class="label">Teeth</div>
-        <div class="price">€90</div><div class="price-alt">£75</div><div class="per">€22.50 / £18.75 per tooth</div>
-        <button class="btn btn-block" data-add="4 teeth grill" data-top="4">Add to order</button>
+        <div class="price"></div><div class="per"></div>
+        <button class="btn btn-block" data-add="4 teeth grill">Add to order</button>
       </article>
-      <article class="card price-card featured reveal">
+      <article class="card price-card featured reveal" data-teeth="6">
         <span class="badge">POPULAR</span>
         <div class="teeth">6</div><div class="label">Teeth</div>
-        <div class="price">€120</div><div class="price-alt">£100</div><div class="per">The classic six</div>
-        <button class="btn btn-block" data-add="6 teeth grill" data-top="6">Add to order</button>
+        <div class="price"></div><div class="per"></div>
+        <button class="btn btn-block" data-add="6 teeth grill">Add to order</button>
       </article>
-      <article class="card price-card reveal">
+      <article class="card price-card reveal" data-teeth="8">
         <div class="teeth">8</div><div class="label">Teeth</div>
-        <div class="price">€150</div><div class="price-alt">£125</div><div class="per">€18.75 / £15.63 per tooth</div>
-        <button class="btn btn-block" data-add="8 teeth grill" data-top="8">Add to order</button>
+        <div class="price"></div><div class="per"></div>
+        <button class="btn btn-block" data-add="8 teeth grill">Add to order</button>
       </article>
-      <article class="card price-card reveal">
+      <article class="card price-card reveal" data-teeth="10">
         <div class="teeth">Full</div><div class="label">Set</div>
-        <div class="price">€200</div><div class="price-alt">£170</div><div class="per">Full arch coverage</div>
-        <button class="btn btn-block" data-add="Full set grill" data-top="10">Add to order</button>
+        <div class="price"></div><div class="per"></div>
+        <button class="btn btn-block" data-add="Full set grill">Add to order</button>
       </article>
     </section>
 

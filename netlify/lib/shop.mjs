@@ -1,27 +1,28 @@
 // Shared pricing + Stripe helpers for the Netlify Functions.
-// Prices must match PRICE_TIERS in js/main.js (and server.py for local runs).
+// Prices must match PRICES in js/main.js (and server.py for local runs).
 
-export const PRICE_TIERS = [
-  { teeth: 1, EUR: 40, GBP: 35 },
-  { teeth: 2, EUR: 60, GBP: 50 },
-  { teeth: 4, EUR: 90, GBP: 75 },
-  { teeth: 6, EUR: 120, GBP: 100 },
-  { teeth: 8, EUR: 150, GBP: 125 },
-];
-export const FULL_PRICE = { EUR: 200, GBP: 170 };
+// Price per arch for each metal: [teeth, EUR, GBP]; "full" covers 9+ teeth.
+export const PRICES = {
+  silver: { tiers: [[1, 40, 35], [2, 60, 50], [4, 90, 75], [6, 120, 100], [8, 150, 125]], full: [200, 170] },
+  gold: { tiers: [[1, 160, 140], [2, 300, 260], [4, 560, 490], [6, 800, 700], [8, 1040, 910]], full: [1250, 1090] },
+  rose: { tiers: [[1, 170, 150], [2, 315, 275], [4, 590, 515], [6, 840, 735], [8, 1090, 950]], full: [1310, 1145] },
+};
+export const CURRENCIES = ["EUR", "GBP"];
 export const DEPOSIT_RATE = 0.5;
 const MAX_TEETH_PER_ARCH = 10;
-const METALS = { silver: "Silver", gold: "Gold", rose: "Rose gold" };
+const METALS = { silver: "Sterling silver", gold: "9ct gold", rose: "9ct rose gold" };
 const STYLES = new Set(["Plain polish", "Open face", "Diamond cut"]);
 // Methods the payment page offers. Stripe Checkout shows whichever of these are
 // switched on in Dashboard > Settings > Payment methods (Stripe no longer lets
 // the site pick one), so this list is only used to validate the request.
 export const STRIPE_METHODS = { apple: "card", google: "card", card: "card", paypal: "paypal" };
 
-export function archPrice(teeth, currency) {
+export function archPrice(teeth, currency, metal = "silver") {
   if (teeth <= 0) return 0;
-  const tier = PRICE_TIERS.find((t) => teeth <= t.teeth);
-  return tier ? tier[currency] : FULL_PRICE[currency];
+  const table = PRICES[metal];
+  const col = CURRENCIES.indexOf(currency) + 1;
+  const tier = table.tiers.find((t) => teeth <= t[0]);
+  return tier ? tier[col] : table.full[col - 1];
 }
 
 /** Validate the basket and price it ourselves — never trust browser prices. */
@@ -34,8 +35,9 @@ export function priceOrder(items, currency) {
     if (!valid(top) || !valid(bottom) || top + bottom === 0) throw new Error("Invalid teeth selection.");
     const style = item.style ?? "Plain polish";
     if (!STYLES.has(style)) throw new Error("Custom designs need a quote before payment.");
-    const metal = METALS[item.metal] ?? "Silver";
-    const price = archPrice(top, currency) + archPrice(bottom, currency);
+    if (!(item.metal in METALS)) throw new Error("Choose silver, gold or rose gold.");
+    const metal = METALS[item.metal];
+    const price = archPrice(top, currency, item.metal) + archPrice(bottom, currency, item.metal);
     const arches = [top && `Top ${top >= 9 ? "full" : top}`, bottom && `Bottom ${bottom >= 9 ? "full" : bottom}`].filter(Boolean);
     total += price;
     return { summary: `${arches.join(", ")} · ${metal} · ${style}`, price };

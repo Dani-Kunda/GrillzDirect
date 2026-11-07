@@ -7,16 +7,16 @@ const EMAIL = "prodmizzdirect@gmail.com";
 const INSTAGRAM = "https://www.instagram.com/grillzdirect/";
 const DEPOSIT_RATE = 0.5;
 
-// Newbie price list (per arch), from the pricing flyer, in euro (Ireland) and pounds (UK).
-// Keep in sync with PRICE_TIERS in server.py — the server is what actually charges.
-const PRICE_TIERS = [
-  { teeth: 1, EUR: 40, GBP: 35 },
-  { teeth: 2, EUR: 60, GBP: 50 },
-  { teeth: 4, EUR: 90, GBP: 75 },
-  { teeth: 6, EUR: 120, GBP: 100 },
-  { teeth: 8, EUR: 150, GBP: 125 },
-];
-const FULL_PRICE = { EUR: 200, GBP: 170 };
+// Price per arch for each metal, in euro (Ireland) and pounds (UK): [teeth, EUR, GBP].
+// Silver is the newbie flyer price; gold and rose gold (9ct) are estimates from
+// casting and metal costs (Nov 2026) — review them when gold prices move.
+// Keep in sync with PRICES in netlify/lib/shop.mjs and server.py — the server is what charges.
+const PRICES = {
+  silver: { tiers: [[1, 40, 35], [2, 60, 50], [4, 90, 75], [6, 120, 100], [8, 150, 125]], full: [200, 170] },
+  gold: { tiers: [[1, 160, 140], [2, 300, 260], [4, 560, 490], [6, 800, 700], [8, 1040, 910]], full: [1250, 1090] },
+  rose: { tiers: [[1, 170, 150], [2, 315, 275], [4, 590, 515], [6, 840, 735], [8, 1090, 950]], full: [1310, 1145] },
+};
+const CURRENCIES = ["EUR", "GBP"];
 const SYMBOL = { EUR: "€", GBP: "£" };
 
 const store = {
@@ -29,14 +29,28 @@ const store = {
   },
 };
 
-const money = (n, cur = "EUR") => SYMBOL[cur] + n.toFixed(n % 1 ? 2 : 0);
-const both = (prices) => `${money(prices.EUR, "EUR")} / ${money(prices.GBP, "GBP")}`;
+const money = (n, cur = getCurrency()) =>
+  SYMBOL[cur] + n.toLocaleString("en-IE", { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 });
 
 // Preferred currency: saved choice, else £ for UK browsers, else €
 function getCurrency() {
   const saved = store.get("gd-currency", null);
   if (saved === "EUR" || saved === "GBP") return saved;
   return /-GB$/i.test(navigator.language || "") ? "GBP" : "EUR";
+}
+// The € / £ button in the top bar switches every price on the page
+function setCurrency(cur) {
+  store.set("gd-currency", cur);
+  updateCurrencyButton();
+  renderPrices();
+  document.dispatchEvent(new CustomEvent("currencychange"));
+}
+function updateCurrencyButton() {
+  const btn = document.getElementById("currency-toggle");
+  if (!btn) return;
+  const cur = getCurrency();
+  btn.innerHTML = `<span class="currency-symbol">${SYMBOL[cur]}</span><span class="theme-label">${cur}</span>`;
+  btn.setAttribute("aria-label", `Prices in ${cur === "EUR" ? "euro" : "pounds"}. Click to switch.`);
 }
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -88,6 +102,7 @@ function renderChrome() {
           ${PAGES.map(([href, label]) => `<li><a href="${href}" class="${href === here ? "active" : ""}">${label}</a></li>`).join("")}
         </ul>
         <div class="nav-tools">
+          <button class="icon-btn currency-btn" id="currency-toggle" type="button"></button>
           <button class="icon-btn" id="theme-toggle" type="button"></button>
           <a class="icon-btn" href="payment.html" aria-label="Your order">${ICONS.bag}<span class="cart-count" data-count="0">0</span></a>
           <button class="icon-btn menu-toggle" id="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false">${ICONS.menu}</button>
@@ -164,29 +179,64 @@ function updateCartCount() {
   $$(".cart-count").forEach((el) => { el.textContent = n; el.dataset.count = n; });
 }
 
-/* price for one arch with n teeth (9+ counts as a full arch) */
-function archPrice(n, cur) {
+/* price for one arch with n teeth in a metal (9+ counts as a full arch) */
+function archPrice(n, cur, metal = "silver") {
   if (n <= 0) return 0;
-  const tier = PRICE_TIERS.find((t) => n <= t.teeth);
-  return tier ? tier[cur] : FULL_PRICE[cur];
+  const table = PRICES[metal] || PRICES.silver;
+  const col = CURRENCIES.indexOf(cur) + 1;
+  const tier = table.tiers.find((t) => n <= t[0]);
+  return tier ? tier[col] : table.full[col - 1];
 }
-const itemPrice = (i, cur) => archPrice(i.top, cur) + archPrice(i.bottom, cur);
+const itemPrice = (i, cur) => archPrice(i.top, cur, i.metal) + archPrice(i.bottom, cur, i.metal);
+
+/* fill any <span data-price="metal:teeth"> on the page (teeth may be "full") */
+function renderPrices() {
+  const cur = getCurrency();
+  $$("[data-price]").forEach((el) => {
+    const [metal, teeth] = el.dataset.price.split(":");
+    el.textContent = money(archPrice(teeth === "full" ? 10 : Number(teeth), cur, metal), cur);
+  });
+}
 const archText = (n) => (n >= 9 ? "full" : n);
 
-/* ---------- pricing page: add-to-order buttons ---------- */
+/* ---------- pricing page: metal picker + add-to-order buttons ---------- */
+const METALS = { silver: "Silver", gold: "Gold", rose: "Rose gold" };
+const METAL_NOTES = { silver: "Sterling silver 925", gold: "9ct yellow gold", rose: "9ct rose gold" };
+
 function initShop() {
-  $$("[data-add]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      cart.add({
-        name: btn.dataset.add, top: Number(btn.dataset.top), bottom: 0,
-        metal: "silver", style: "Plain polish", details: "Top arch · metal confirmed at consultation",
-      });
+  const grid = $("#price-grid");
+  if (!grid) return;
+  let metal = "silver";
+
+  function render() {
+    const cur = getCurrency();
+    $$("[data-metal-pick]").forEach((c) => c.classList.toggle("on", c.dataset.metalPick === metal));
+    $("#metal-note").textContent = METAL_NOTES[metal];
+    $$(".price-card", grid).forEach((card) => {
+      const n = Number(card.dataset.teeth);
+      const price = archPrice(n, cur, metal);
+      $(".price", card).textContent = money(price, cur);
+      $(".per", card).textContent = n >= 9 ? "Full arch coverage"
+        : n === 1 ? "Single cap" : `${money(Math.round((price / n) * 100) / 100, cur)} per tooth`;
     });
-  });
+  }
+
+  $$("[data-metal-pick]").forEach((chip) => chip.addEventListener("click", () => {
+    metal = chip.dataset.metalPick;
+    render();
+  }));
+  $$("[data-add]", grid).forEach((btn) => btn.addEventListener("click", () => {
+    const n = Number(btn.closest(".price-card").dataset.teeth);
+    cart.add({
+      name: `${btn.dataset.add} — ${METALS[metal].toLowerCase()}`, top: n, bottom: 0,
+      metal, style: "Plain polish", details: `Top arch · ${METAL_NOTES[metal]}`,
+    });
+  }));
+  document.addEventListener("currencychange", render);
+  render();
 }
 
 /* ---------- custom builder ---------- */
-const METALS = { silver: "Silver", gold: "Gold", rose: "Rose gold" };
 
 function initBuilder() {
   const root = $("#builder");
@@ -245,18 +295,16 @@ function initBuilder() {
       });
     });
     const t = state.top.size, bt = state.bottom.size;
-    const price = (cur) => archPrice(t, cur) + archPrice(bt, cur);
-    const total = { EUR: price("EUR"), GBP: price("GBP") };
+    const cur = getCurrency();
+    const total = archPrice(t, cur, state.metal) + archPrice(bt, cur, state.metal);
     const custom = state.style === "Custom design";
-    const archLine = (n) => n ? `${n >= 9 ? "Full" : n + " teeth"} · ${both({ EUR: archPrice(n, "EUR"), GBP: archPrice(n, "GBP") })}` : "—";
+    const archLine = (n) => n ? `${n >= 9 ? "Full" : n + " teeth"} · ${money(archPrice(n, cur, state.metal), cur)}` : "—";
     $("#sum-top").textContent = archLine(t);
     $("#sum-bottom").textContent = archLine(bt);
-    $("#sum-metal").textContent = METALS[state.metal];
+    $("#sum-metal").textContent = METAL_NOTES[state.metal];
     $("#sum-style").textContent = state.style;
-    $("#sum-total").innerHTML = custom ? "TBD"
-      : `${money(total.EUR, "EUR")} <small class="muted">/ ${money(total.GBP, "GBP")}</small>`;
-    $("#sum-deposit").textContent = custom ? "Quote first"
-      : both({ EUR: total.EUR * DEPOSIT_RATE, GBP: total.GBP * DEPOSIT_RATE });
+    $("#sum-total").textContent = custom ? "TBD" : money(total, cur);
+    $("#sum-deposit").textContent = custom ? "Quote first" : money(total * DEPOSIT_RATE, cur);
     const addBtn = $("#builder-add");
     addBtn.disabled = !(t + bt) || custom;
     $("#builder-quote").hidden = !custom;
@@ -268,13 +316,14 @@ function initBuilder() {
     const parts = [];
     if (t) parts.push(`Top: ${archText(t)}`);
     if (bt) parts.push(`Bottom: ${archText(bt)}`);
-    parts.push(METALS[state.metal], state.style);
+    parts.push(METAL_NOTES[state.metal], state.style);
     cart.add({
       name: "Custom-built grillz", top: t, bottom: bt,
       metal: state.metal, style: state.style, details: parts.join(" · "),
     });
   });
 
+  document.addEventListener("currencychange", update);
   update();
 }
 
@@ -286,21 +335,20 @@ const METHOD_NAMES = { apple: "Apple Pay", google: "Google Pay", card: "card", p
 function initPayment() {
   const list = $("#cart-list");
   if (!list) return;
-  let currency = getCurrency();
 
   if (new URLSearchParams(location.search).has("cancelled")) {
     $("#pay-result").innerHTML = `<div class="notice" style="margin-top:16px">Payment cancelled — nothing was charged. Your order is still saved here.</div>`;
   }
 
   function render() {
+    const currency = getCurrency();
     const items = cart.items();
     list.innerHTML = items.length
       ? items.map((i) => `
           <div class="cart-item">
             <div><strong>${i.name}</strong><small>${i.details || ""}</small></div>
             <div style="display:flex;align-items:center;gap:10px;text-align:right">
-              <div><strong>${money(itemPrice(i, currency), currency)}</strong>
-              <small>${money(itemPrice(i, currency === "EUR" ? "GBP" : "EUR"), currency === "EUR" ? "GBP" : "EUR")}</small></div>
+              <strong>${money(itemPrice(i, currency), currency)}</strong>
               <button class="remove" data-uid="${i.uid}" aria-label="Remove ${i.name}">×</button>
             </div>
           </div>`).join("")
@@ -312,7 +360,6 @@ function initPayment() {
     $("#pay-balance").textContent = money(total - deposit, currency);
     $$(".pay-cta").forEach((b) => (b.disabled = !items.length));
     $$(".deposit-amount").forEach((el) => (el.textContent = money(deposit, currency)));
-    $$("[data-currency]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.currency === currency));
   }
 
   list.addEventListener("click", (e) => {
@@ -320,11 +367,7 @@ function initPayment() {
     if (btn) { cart.remove(btn.dataset.uid); render(); }
   });
 
-  $$("[data-currency]").forEach((b) => b.addEventListener("click", () => {
-    currency = b.dataset.currency;
-    store.set("gd-currency", currency);
-    render();
-  }));
+  document.addEventListener("currencychange", render);
 
   // method selector
   $$(".pay-method").forEach((m) => m.addEventListener("click", () => {
@@ -343,7 +386,7 @@ function initPayment() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          method, currency,
+          method, currency: getCurrency(),
           items: cart.items().map(({ name, top, bottom, metal, style }) => ({ name, top, bottom, metal, style })),
         }),
       });
@@ -436,6 +479,14 @@ function initCommon() {
     toast(next === "auto" ? "Theme now matches your device" : `${next[0].toUpperCase() + next.slice(1)} mode on`);
   });
   applyTheme(store.get("gd-theme", "auto"));
+
+  $("#currency-toggle")?.addEventListener("click", () => {
+    const next = getCurrency() === "EUR" ? "GBP" : "EUR";
+    setCurrency(next);
+    toast(next === "EUR" ? "Prices now in euro (€)" : "Prices now in pounds (£)");
+  });
+  updateCurrencyButton();
+  renderPrices();
 
   const menuBtn = $("#menu-toggle");
   menuBtn?.addEventListener("click", () => {
