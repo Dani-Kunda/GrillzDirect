@@ -123,7 +123,7 @@ function renderChrome() {
         </div>
         <div class="footer-bottom">
           <span>© ${new Date().getFullYear()} Grillz Direct. All rights reserved.</span>
-          <span>50% deposit required on all orders.</span>
+          <span><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms & Refunds</a> · 50% deposit required on all orders.</span>
         </div>
       </div>`;
   }

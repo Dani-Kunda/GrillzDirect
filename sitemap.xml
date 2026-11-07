@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://YOUR-DOMAIN/</loc></url>
-  <url><loc>https://YOUR-DOMAIN/shop.html</loc></url>
-  <url><loc>https://YOUR-DOMAIN/custom.html</loc></url>
-  <url><loc>https://YOUR-DOMAIN/policy.html</loc></url>
-  <url><loc>https://YOUR-DOMAIN/faq.html</loc></url>
-  <url><loc>https://YOUR-DOMAIN/contact.html</loc></url>
-  <url><loc>https://YOUR-DOMAIN/payment.html</loc></url>
+  <url><loc>https://grillzdirect.netlify.app/</loc></url>
+  <url><loc>https://grillzdirect.netlify.app/shop.html</loc></url>
+  <url><loc>https://grillzdirect.netlify.app/custom.html</loc></url>
+  <url><loc>https://grillzdirect.netlify.app/policy.html</loc></url>
+  <url><loc>https://grillzdirect.netlify.app/faq.html</loc></url>
+  <url><loc>https://grillzdirect.netlify.app/contact.html</loc></url>
+  <url><loc>https://grillzdirect.netlify.app/payment.html</loc></url>
+  <url><loc>https://grillzdirect.netlify.app/privacy.html</loc></url>
+  <url><loc>https://grillzdirect.netlify.app/terms.html</loc></url>
 </urlset>
